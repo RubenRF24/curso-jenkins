@@ -1,0 +1,5 @@
+# Created at 2025-04-28T17:44:33.384
+Boot Manifest-JAR contains absolute paths in classpath 'd:\Universidad\7 Semestre\Modelos de calidad de software\3 Corte\cafeteria-app\cafeteria-app\target\test-classes'
+Hint: <argLine>-Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
+'other' has different root
+
