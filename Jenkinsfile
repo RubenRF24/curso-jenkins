@@ -11,7 +11,9 @@ pipeline {
    stages {
        stage('Build and Test') {
            steps {
-               sh './mvnw verify'
+                dir('cafeteria-app') {
+                   sh './mvnw verify'
+               }
            }
        }
    }
