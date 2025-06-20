@@ -2,7 +2,7 @@ pipeline {
    agent {
        docker {
              image 'eclipse-temurin:21-jdk-jammy'
-             args '-u root -v /var/run/docker.sock:/var/run/docker.sock -v maven-cache:/root/.m2'
+             args '--network jenkins-net -u root -v /var/run/docker.sock:/var/run/docker.sock -v maven-cache:/root/.m2'
        }
  }
  
