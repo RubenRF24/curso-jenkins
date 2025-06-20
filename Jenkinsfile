@@ -12,6 +12,7 @@ pipeline {
        stage('Build and Test') {
            steps {
                 dir('cafeteria-app') {
+                    sh 'chmod +x mvnw'
                    sh './mvnw verify'
                }
            }
