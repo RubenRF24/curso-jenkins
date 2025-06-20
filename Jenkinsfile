@@ -2,9 +2,13 @@ pipeline {
    agent {
        docker {
              image 'eclipse-temurin:21-jdk-jammy'
-             args '--network jenkins-net -u root -v /var/run/docker.sock:/var/run/docker.sock -v maven-cache:/root/.m2'
+             args '--network jenkins-net --add-host=host.docker.internal:host-gateway -u root -v /var/run/docker.sock:/var/run/docker.sock -v maven-cache:/root/.m2'
        }
  }
+
+ environment {
+       TESTCONTAINERS_HOST_OVERRIDE = 'host.docker.internal'
+   }
  
    triggers { pollSCM 'H/2 * * * *' } // poll every 2 mins
  
