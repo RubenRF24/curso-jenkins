@@ -33,6 +33,8 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/pedidos")
 public class PedidoController {
 
+    // Inyección de dependencias para los servicios necesarios
+
     @Autowired
     private PedidoService pedidoService;
 
@@ -103,7 +105,7 @@ public class PedidoController {
         pedidoCancelado.getDetallesPedidoList().forEach(detalle -> {
             productoService.actualizarStock(detalle.getProducto(), detalle.getCantidad() * -1);
         });
-        
+
         return ResponseEntity.ok().body("Pedido #" + id + " cancelado.");
     }
 
