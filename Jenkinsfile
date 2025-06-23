@@ -8,7 +8,8 @@ pipeline {
 
  parameters {
        // Define un parámetro de tipo 'credencial'
-       credential(
+       // Se corrigió 'credential' a 'credentials'
+       credentials(
            name: 'GITHUB_CREDENTIALS_ID', 
            description: 'Credencial de GitHub para hacer push al repositorio', 
            required: true
