@@ -6,6 +6,15 @@ pipeline {
        }
  }
 
+ parameters {
+       // Define un parámetro de tipo 'credencial'
+       credential(
+           name: 'GITHUB_CREDENTIALS_ID', 
+           description: 'Credencial de GitHub para hacer push al repositorio', 
+           required: true
+       )
+   }
+
  environment {
        TESTCONTAINERS_HOST_OVERRIDE = 'host.docker.internal'
    }
@@ -27,9 +36,16 @@ pipeline {
                sh '''
                    apt-get update && apt-get install -y git
                '''
-               sh 'git checkout master'
-               sh 'git merge origin/feature/addtest'
-               sh 'git push origin master'
+               
+               // Usa el parámetro en lugar del ID hardcodeado
+               withCredentials([string(credentialsId: params.GITHUB_CREDENTIALS_ID, variable: 'GITHUB_TOKEN')]) {
+                   sh 'git config --global user.email "jenkins-ci@example.com"'
+                   sh 'git config --global user.name "Jenkins CI"'
+                   sh 'git checkout master'
+                   sh 'git merge origin/feature/addtest'
+                   sh 'git remote set-url origin https://${GITHUB_TOKEN}@github.com/RubenRF24/curso-jenkins.git'
+                   sh 'git push origin master'
+               }
            }
        }
    }
