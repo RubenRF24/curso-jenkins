@@ -1,5 +1,7 @@
 package com.rubenrf.cafeteria_app;
+
 import static org.hamcrest.Matchers.equalTo;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,8 @@ import io.restassured.RestAssured;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureWireMock(port = 0)
 class CafeteriaAppApplicationTests {
+
+	// Prueba
 
 	@LocalServerPort
 	private Integer port;
@@ -40,7 +44,7 @@ class CafeteriaAppApplicationTests {
 
 	@Test
 	void obtenerProductosVacio() {
-				
+
 		RestAssured.given()
 				.contentType("application/json")
 				.when()
@@ -167,8 +171,6 @@ class CafeteriaAppApplicationTests {
 				.statusCode(200);
 	}
 
-	
-
 	@Test
 	void obtenerClientes() {
 		String crearClienteJson = """
@@ -215,10 +217,6 @@ class CafeteriaAppApplicationTests {
 
 	}
 
-	
-
-	
-
 	@Test
 	void obtenerProductos() {
 		String crearProductoJson = """
@@ -264,8 +262,6 @@ class CafeteriaAppApplicationTests {
 				.log().all()
 				.statusCode(200);
 	}
-
-	
 
 	@Test
 	void actualizarCliente() {
@@ -844,7 +840,6 @@ class CafeteriaAppApplicationTests {
 				.log().all()
 				.statusCode(404);
 	}
-
 
 	@Test
 	void cancelarPedidoInexistente() {
