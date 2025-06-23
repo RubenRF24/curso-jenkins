@@ -21,5 +21,13 @@ pipeline {
                }
            }
        }
+
+       stage('Merge and Push to Master') {
+           steps {
+               sh 'git checkout master'
+               sh 'git merge origin/feature/addtest'
+               sh 'git push origin master'
+           }
+       }
    }
 }
