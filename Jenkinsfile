@@ -24,6 +24,9 @@ pipeline {
 
        stage('Merge and Push to Master') {
            steps {
+               sh '''
+                   apt-get update && apt-get install -y git
+               '''
                sh 'git checkout master'
                sh 'git merge origin/feature/addtest'
                sh 'git push origin master'
