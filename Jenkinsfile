@@ -50,4 +50,21 @@ pipeline {
            }
        }
    }
+   
+   post {
+       success {
+           slackSend(
+               channel: '#jenkins-ci', // REEMPLAZA con tu canal
+               color: 'good',
+               message: "SUCCESS: Pipeline '${env.JOB_NAME}' build #${env.BUILD_NUMBER} completed successfully. <${env.BUILD_URL}|Open>"
+           )
+       }
+       failure {
+           slackSend(
+               channel: '#jenkins-ci', // REEMPLAZA con tu canal
+               color: 'danger',
+               message: "FAILURE: Pipeline '${env.JOB_NAME}' build #${env.BUILD_NUMBER} failed. <${env.BUILD_URL}|Open>"
+           )
+       }
+   }
 }
