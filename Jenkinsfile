@@ -8,11 +8,16 @@ pipeline {
  }
 
  parameters {
-       // Define un parámetro de tipo 'credencial'
-       // Se corrigió 'credential' a 'credentials'
+       // Define un parámetro de tipo 'credencial' para GitHub
        credentials(
            name: 'GITHUB_CREDENTIALS_ID', 
            description: 'Credencial de GitHub para hacer push al repositorio', 
+           required: true
+       )
+       // Define un parámetro de tipo 'credencial' para SonarQube
+       credentials(
+           name: 'SONARQUBE_CREDENTIALS_ID', 
+           description: 'Credencial del token de SonarQube', 
            required: true
        )
    }
@@ -37,8 +42,8 @@ pipeline {
            steps {
                // 'sonarqube' debe coincidir con el nombre de tu configuración de servidor SonarQube en Jenkins
                withSonarQubeEnv('sonarqube') {
-                   // Envuelve el comando con las credenciales del token de SonarQube
-                   withCredentials([string(credentialsId: 'sonarqube_tk', variable: 'SONAR_TOKEN')]) {
+                   // Usa el nuevo parámetro para obtener el token de SonarQube
+                   withCredentials([string(credentialsId: params.SONARQUBE_CREDENTIALS_ID, variable: 'SONAR_TOKEN')]) {
                        dir('cafeteria-app') {
                            // Ejecuta el scanner pasando el token explícitamente
                            sh "./mvnw sonar:sonar -Dsonar.projectKey=sonarqube -Dsonar.sources=src/main/java -Dsonar.java.binaries=target/classes -Dsonar.login=${SONAR_TOKEN} -X"
