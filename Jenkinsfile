@@ -42,24 +42,31 @@ pipeline {
            steps {
                // 'sonarqube' debe coincidir con el nombre de tu configuración de servidor SonarQube en Jenkins
                withSonarQubeEnv('sonarqube') {
-                   
-                   // Paso robusto para esperar a SonarQube
-                   sh '''
-                       echo "Waiting for SonarQube to become available..."
-                       apt-get update && apt-get install -y curl
-                       
-                       for i in {1..30}; do
-                           if curl -s -u ${SONAR_TOKEN}: http://sonarqube:9090/api/system/status | grep -q '"status":"UP"'; then
-                               echo "SonarQube is UP!"
-                               break
-                           fi
-                           echo "SonarQube not yet available, waiting 5 seconds... (Attempt $i/30)"
-                           sleep 5
-                       done
-                   '''
-
-                   // Usa el nuevo parámetro para obtener el token de SonarQube
+                   // Usa el parámetro para obtener el token de SonarQube
                    withCredentials([string(credentialsId: params.SONARQUBE_CREDENTIALS_ID, variable: 'SONAR_TOKEN')]) {
+                       
+                       // Paso robusto para esperar a SonarQube (movido aquí dentro)
+                       sh '''
+                           echo "Waiting for SonarQube to become available..."
+                           # apt-get se ejecuta una sola vez si es necesario
+                           if ! command -v curl &> /dev/null; then
+                               apt-get update && apt-get install -y curl
+                           fi
+                           
+                           # Bucle de espera con el token disponible
+                           for i in {1..30}; do
+                               # Usamos -f para que curl falle si hay un error de conexión
+                               if curl -s -f -u ${SONAR_TOKEN}: http://sonarqube:9090/api/system/status | grep -q '"status":"UP"'; then
+                                   echo "SonarQube is UP!"
+                                   exit 0 # Salir del script con éxito
+                               fi
+                               echo "SonarQube not yet available, waiting 5 seconds... (Attempt $i/30)"
+                               sleep 5
+                           done
+                           echo "SonarQube did not start in time."
+                           exit 1 # Salir del script con error
+                       '''
+
                        dir('cafeteria-app') {
                            // Ejecuta el scanner pasando el token explícitamente
                            sh "./mvnw sonar:sonar -Dsonar.projectKey=sonarqube -Dsonar.sources=src/main/java -Dsonar.java.binaries=target/classes -Dsonar.login=${SONAR_TOKEN} -X"
