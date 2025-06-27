@@ -23,11 +23,24 @@ pipeline {
    triggers { pollSCM 'H/2 * * * *' } // poll every 2 mins
  
    stages {
-       stage('Build and Test') {
+
+       stage('SonarQube Analysis') {
            steps {
-                dir('cafeteria-app') {
-                    sh 'chmod +x mvnw'
-                   sh './mvnw verify'
+               // 'SonarQube' debe coincidir con el nombre de tu configuración de servidor SonarQube en Jenkins
+               withSonarQubeEnv('SonarQube') {
+                   dir('cafeteria-app') {
+                       // Ejecuta el scanner de SonarQube con las propiedades que definiste
+                       sh './mvnw sonar:sonar -Dsonar.projectKey=sonarqube -Dsonar.sources=src/main/java -Dsonar.java.binaries=target/classes -X'
+                   }
+               }
+           }
+           post {
+               success {
+                   // Espera el resultado del Quality Gate y falla el pipeline si no es 'PASSED'
+                   // El timeout es opcional pero recomendado
+                   timeout(time: 1, unit: 'MINUTES') {
+                       waitForQualityGate abortPipeline: true
+                   }
                }
            }
        }
@@ -46,6 +59,15 @@ pipeline {
                    sh 'git merge origin/feature/addtest'
                    sh 'git remote set-url origin https://${GITHUB_TOKEN}@github.com/RubenRF24/curso-jenkins.git'
                    sh 'git push origin master'
+               }
+           }
+       }
+       
+       stage('Build and Test') {
+           steps {
+                dir('cafeteria-app') {
+                    sh 'chmod +x mvnw'
+                   sh './mvnw verify'
                }
            }
        }
