@@ -53,14 +53,16 @@ pipeline {
                                apt-get update && apt-get install -y curl
                            fi
                            
-                           # Bucle de espera con el token disponible
-                           for i in {1..30}; do
+                           # Bucle de espera compatible con sh/dash
+                           i=1
+                           while [ $i -le 30 ]; do
                                # Usamos -f para que curl falle si hay un error de conexión
                                if curl -s -f -u ${SONAR_TOKEN}: http://sonarqube:9090/api/system/status | grep -q '"status":"UP"'; then
                                    echo "SonarQube is UP!"
                                    exit 0 # Salir del script con éxito
                                fi
                                echo "SonarQube not yet available, waiting 5 seconds... (Attempt $i/30)"
+                               i=$((i+1))
                                sleep 5
                            done
                            echo "SonarQube did not start in time."
