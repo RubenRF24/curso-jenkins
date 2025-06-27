@@ -43,8 +43,8 @@ pipeline {
                // 'sonarqube' debe coincidir con el nombre de tu configuración de servidor SonarQube en Jenkins
                withSonarQubeEnv('sonarqube') {
                    // Añade un retraso para dar tiempo a SonarQube a iniciarse
-                   echo "Waiting 30 seconds for SonarQube to start..."
-                   sh "sleep 30"
+                   echo "Waiting 60 seconds for SonarQube to start..."
+                   sh "sleep 60"
 
                    // Usa el nuevo parámetro para obtener el token de SonarQube
                    withCredentials([string(credentialsId: params.SONARQUBE_CREDENTIALS_ID, variable: 'SONAR_TOKEN')]) {
