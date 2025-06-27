@@ -42,9 +42,21 @@ pipeline {
            steps {
                // 'sonarqube' debe coincidir con el nombre de tu configuración de servidor SonarQube en Jenkins
                withSonarQubeEnv('sonarqube') {
-                   // Añade un retraso para dar tiempo a SonarQube a iniciarse
-                   echo "Waiting 60 seconds for SonarQube to start..."
-                   sh "sleep 60"
+                   
+                   // Paso robusto para esperar a SonarQube
+                   sh '''
+                       echo "Waiting for SonarQube to become available..."
+                       apt-get update && apt-get install -y curl
+                       
+                       for i in {1..30}; do
+                           if curl -s -u ${SONAR_TOKEN}: http://sonarqube:9090/api/system/status | grep -q '"status":"UP"'; then
+                               echo "SonarQube is UP!"
+                               break
+                           fi
+                           echo "SonarQube not yet available, waiting 5 seconds... (Attempt $i/30)"
+                           sleep 5
+                       done
+                   '''
 
                    // Usa el nuevo parámetro para obtener el token de SonarQube
                    withCredentials([string(credentialsId: params.SONARQUBE_CREDENTIALS_ID, variable: 'SONAR_TOKEN')]) {
