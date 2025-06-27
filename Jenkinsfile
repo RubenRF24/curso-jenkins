@@ -2,7 +2,8 @@ pipeline {
    agent {
        docker {
              image 'eclipse-temurin:21-jdk-jammy'
-             args '--network jenkins-net --add-host=host.docker.internal:host-gateway -u root -v /var/run/docker.sock:/var/run/docker.sock -v maven-cache:/root/.m2'
+             // Añadido --link sonarqube para la resolución de red
+             args '--network jenkins-net --link sonarqube --add-host=host.docker.internal:host-gateway -u root -v /var/run/docker.sock:/var/run/docker.sock -v maven-cache:/root/.m2'
        }
  }
 
