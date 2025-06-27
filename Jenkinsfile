@@ -34,11 +34,14 @@ pipeline {
 
        stage('SonarQube Analysis') {
            steps {
-               // 'SonarQube' debe coincidir con el nombre de tu configuración de servidor SonarQube en Jenkins
+               // 'sonarqube' debe coincidir con el nombre de tu configuración de servidor SonarQube en Jenkins
                withSonarQubeEnv('sonarqube') {
-                   dir('cafeteria-app') {
-                       // Ejecuta el scanner de SonarQube con las propiedades que definiste
-                       sh './mvnw sonar:sonar -Dsonar.projectKey=sonarqube -Dsonar.sources=src/main/java -Dsonar.java.binaries=target/classes -X'
+                   // Envuelve el comando con las credenciales del token de SonarQube
+                   withCredentials([string(credentialsId: 'sonarqube_tk', variable: 'SONAR_TOKEN')]) {
+                       dir('cafeteria-app') {
+                           // Ejecuta el scanner pasando el token explícitamente
+                           sh "./mvnw sonar:sonar -Dsonar.projectKey=sonarqube -Dsonar.sources=src/main/java -Dsonar.java.binaries=target/classes -Dsonar.login=${SONAR_TOKEN} -X"
+                       }
                    }
                }
            }
