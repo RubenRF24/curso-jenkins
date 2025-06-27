@@ -23,11 +23,19 @@ pipeline {
    triggers { pollSCM 'H/2 * * * *' } // poll every 2 mins
  
    stages {
+       stage('Build and Test') {
+           steps {
+                dir('cafeteria-app') {
+                    sh 'chmod +x mvnw'
+                   sh './mvnw verify'
+               }
+           }
+       }
 
        stage('SonarQube Analysis') {
            steps {
                // 'SonarQube' debe coincidir con el nombre de tu configuración de servidor SonarQube en Jenkins
-               withSonarQubeEnv('SonarQube') {
+               withSonarQubeEnv('sonarqube') {
                    dir('cafeteria-app') {
                        // Ejecuta el scanner de SonarQube con las propiedades que definiste
                        sh './mvnw sonar:sonar -Dsonar.projectKey=sonarqube -Dsonar.sources=src/main/java -Dsonar.java.binaries=target/classes -X'
@@ -62,15 +70,7 @@ pipeline {
                }
            }
        }
-       
-       stage('Build and Test') {
-           steps {
-                dir('cafeteria-app') {
-                    sh 'chmod +x mvnw'
-                   sh './mvnw verify'
-               }
-           }
-       }
+
    }
    
    post {
