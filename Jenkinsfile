@@ -29,16 +29,7 @@ pipeline {
    triggers { pollSCM 'H/2 * * * *' } // poll every 2 mins
  
    stages {
-       stage('Build and Test') {
-           steps {
-                dir('cafeteria-app') {
-                    sh 'chmod +x mvnw'
-                   sh './mvnw verify'
-               }
-           }
-       }
-
-       stage('SonarQube Analysis') {
+       stage('Build, Test and Analyze') {
            steps {
                // 'sonarqube' debe coincidir con el nombre de tu configuración de servidor SonarQube en Jenkins
                withSonarQubeEnv('sonarqube') {
@@ -57,7 +48,6 @@ pipeline {
                            i=1
                            while [ $i -le 30 ]; do
                                # Usamos -f para que curl falle si hay un error de conexión
-                               # CORREGIDO: Usando el puerto 9000 por defecto
                                if curl -s -f -u ${SONAR_TOKEN}: http://sonarqube:9000/api/system/status | grep -q '"status":"UP"'; then
                                    echo "SonarQube is UP!"
                                    exit 0 # Salir del script con éxito
@@ -71,8 +61,10 @@ pipeline {
                        '''
 
                        dir('cafeteria-app') {
-                           // Ejecuta el scanner pasando el token explícitamente
-                           sh "./mvnw sonar:sonar -Dsonar.projectKey=sonarqube -Dsonar.sources=src/main/java -Dsonar.java.binaries=target/classes -Dsonar.login=${SONAR_TOKEN} -X"
+                           sh 'chmod +x mvnw'
+                           // Ejecuta verify y sonar en un solo comando. Maven se encarga de las rutas.
+                           // Reemplaza 'sonar.login' por 'sonar.token' para seguir las buenas prácticas.
+                           sh "./mvnw verify sonar:sonar -Dsonar.projectKey=sonarqube -Dsonar.token=${SONAR_TOKEN} -X"
                        }
                    }
                }
@@ -80,7 +72,6 @@ pipeline {
            post {
                success {
                    // Espera el resultado del Quality Gate y falla el pipeline si no es 'PASSED'
-                   // El timeout es opcional pero recomendado
                    timeout(time: 1, unit: 'MINUTES') {
                        waitForQualityGate abortPipeline: true
                    }
