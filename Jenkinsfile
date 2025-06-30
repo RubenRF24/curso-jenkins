@@ -30,11 +30,13 @@ pipeline {
                    }
                }
            }
-           post {
-               success {
+       }
+
+       stage('Quality Gate') {
+           steps {
+               withCredentials([string(credentialsId: params.SONARQUBE_CREDENTIALS_ID, variable: 'SONAR_TOKEN')]) {
+                   sh 'apt-get update && apt-get install -y jq'
                    script {
-                       // Instala jq antes de usarlo
-                       sh 'apt-get update && apt-get install -y jq'
                        def projectKey = "sonarqube"
                        def sonarToken = env.SONAR_TOKEN
                        def status = sh(
@@ -53,7 +55,7 @@ pipeline {
 
        stage('Merge and Push to Master') {
            steps {
-               sh 'apt-get update && apt-get install -y git' // <--- Agrega esta línea
+               sh 'apt-get update && apt-get install -y git'
                withCredentials([string(credentialsId: params.GITHUB_CREDENTIALS_ID, variable: 'GITHUB_TOKEN')]) {
                    sh 'git config --global user.email "jenkins-ci@example.com"'
                    sh 'git config --global user.name "Jenkins CI"'
