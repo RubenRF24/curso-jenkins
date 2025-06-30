@@ -37,8 +37,8 @@ pipeline {
                    withCredentials([string(credentialsId: params.SONARQUBE_CREDENTIALS_ID, variable: 'SONAR_TOKEN')]) {
                        dir('cafeteria-app') {
                            sh 'chmod +x mvnw'
-                           // Añadimos MAVEN_OPTS y deshabilitamos la compilación incremental para mayor fiabilidad en CI
-                           sh "MAVEN_OPTS='-Xmx2g' ./mvnw -Dmaven.compiler.useIncrementalCompilation=false verify sonar:sonar -Dsonar.projectKey=sonarqube -Dsonar.token=${SONAR_TOKEN} -X"
+                           // Añadimos 'clean' para asegurar una compilación limpia, la práctica recomendada en CI.
+                           sh "MAVEN_OPTS='-Xmx2g' ./mvnw clean verify sonar:sonar -Dsonar.projectKey=sonarqube -Dsonar.token=${SONAR_TOKEN} -X"
                        }
                    }
                }
