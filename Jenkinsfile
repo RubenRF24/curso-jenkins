@@ -40,11 +40,11 @@ pipeline {
                    sh 'apt-get update && apt-get install -y jq'
                    script {
                        def projectKey = "sonarqube"
-                       def sonarToken = env.SONAR_TOKEN
                        def status = sh(
-                           script: """
-                               curl -s -u ${sonarToken}: "http://host.docker.internal:9000/api/qualitygates/project_status?projectKey=${projectKey}" | jq -r .projectStatus.status
-                           """,
+                           script: '''
+                               export SONAR_TOKEN=${SONAR_TOKEN} 
+                               curl -s -u $SONAR_TOKEN: "http://host.docker.internal:9000/api/qualitygates/project_status?projectKey=sonarqube" | jq -r .projectStatus.status
+                           ''',
                            returnStdout: true
                        ).trim()
                        if (status != "OK") {
