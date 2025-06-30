@@ -2,8 +2,8 @@ pipeline {
    agent {
        docker {
              image 'eclipse-temurin:21-jdk-jammy'
-             // Cambia 'jenkins-net' por el nombre de tu red real: 'jenkins_sonarqube'
-             args '--network jenkins_sonarqube --link sonarqube --add-host=host.docker.internal:host-gateway -u root -v /var/run/docker.sock:/var/run/docker.sock -v maven-cache:/root/.m2'
+             // Optimizado: Eliminamos el flag --link que está obsoleto
+             args '--network jenkins_sonarqube --add-host=host.docker.internal:host-gateway -u root -v /var/run/docker.sock:/var/run/docker.sock -v maven-cache:/root/.m2'
        }
  }
 
@@ -55,14 +55,14 @@ pipeline {
 
        stage('Merge and Push to Master') {
            steps {
-               sh '''
-                   apt-get update && apt-get install -y git
-               '''
+               // Optimizado: Eliminamos la instalación de git, ya que la imagen lo incluye.
                
                // Usa el parámetro en lugar del ID hardcodeado
                withCredentials([string(credentialsId: params.GITHUB_CREDENTIALS_ID, variable: 'GITHUB_TOKEN')]) {
                    sh 'git config --global user.email "jenkins-ci@example.com"'
                    sh 'git config --global user.name "Jenkins CI"'
+                   // Aseguramos que estamos en la rama correcta antes de hacer merge
+                   sh 'git checkout feature/addtest' 
                    sh 'git checkout master'
                    sh 'git merge origin/feature/addtest'
                    sh 'git remote set-url origin https://${GITHUB_TOKEN}@github.com/RubenRF24/curso-jenkins.git'
