@@ -30,25 +30,6 @@ pipeline {
                    }
                }
            }
-           post {
-               success {
-                   script {
-                       // Instala jq antes de usarlo
-                       sh 'apt-get update && apt-get install -y jq'
-                       def projectKey = "sonarqube"
-                       def sonarToken = env.SONAR_TOKEN
-                       def status = sh(
-                           script: """
-                               curl -s -u ${sonarToken}: "http://host.docker.internal:9000/api/qualitygates/project_status?projectKey=${projectKey}" | jq -r .projectStatus.status
-                           """,
-                           returnStdout: true
-                       ).trim()
-                       if (status != "OK") {
-                           error "Quality Gate failed: ${status}"
-                       }
-                   }
-               }
-           }
        }
 
        stage('Merge and Push to Master') {
@@ -68,6 +49,22 @@ pipeline {
    
    post {
        success {
+           withCredentials([string(credentialsId: params.SONARQUBE_CREDENTIALS_ID, variable: 'SONAR_TOKEN')]) {
+               script {
+                   sh 'apt-get update && apt-get install -y jq'
+                   def projectKey = "sonarqube"
+                   def sonarToken = env.SONAR_TOKEN
+                   def status = sh(
+                       script: """
+                           curl -s -u ${sonarToken}: "http://host.docker.internal:9000/api/qualitygates/project_status?projectKey=${projectKey}" | jq -r .projectStatus.status
+                       """,
+                       returnStdout: true
+                   ).trim()
+                   if (status != "OK") {
+                       error "Quality Gate failed: ${status}"
+                   }
+               }
+           }
            slackSend(
                channel: '#jenkins-ci',
                color: 'good',
