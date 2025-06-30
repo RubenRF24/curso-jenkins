@@ -57,7 +57,8 @@ pipeline {
                            i=1
                            while [ $i -le 30 ]; do
                                # Usamos -f para que curl falle si hay un error de conexión
-                               if curl -s -f -u ${SONAR_TOKEN}: http://sonarqube:9090/api/system/status | grep -q '"status":"UP"'; then
+                               # CORREGIDO: Usando el puerto 9000 por defecto
+                               if curl -s -f -u ${SONAR_TOKEN}: http://sonarqube:9000/api/system/status | grep -q '"status":"UP"'; then
                                    echo "SonarQube is UP!"
                                    exit 0 # Salir del script con éxito
                                fi
