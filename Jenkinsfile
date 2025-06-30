@@ -32,7 +32,8 @@ pipeline {
            }
            post {
                success {
-                   timeout(time: 2, unit: 'MINUTES') {
+                   // Aumentamos el timeout a 3 minutos para dar más tiempo a SonarQube
+                   timeout(time: 3, unit: 'MINUTES') {
                        waitForQualityGate abortPipeline: true
                    }
                }
