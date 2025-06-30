@@ -37,9 +37,8 @@ pipeline {
                    withCredentials([string(credentialsId: params.SONARQUBE_CREDENTIALS_ID, variable: 'SONAR_TOKEN')]) {
                        dir('cafeteria-app') {
                            sh 'chmod +x mvnw'
-                           // Ejecuta verify y sonar en un solo comando. Maven se encarga de las rutas.
-                           // Reemplaza 'sonar.login' por 'sonar.token' para seguir las buenas prácticas.
-                           sh "./mvnw verify sonar:sonar -Dsonar.projectKey=sonarqube -Dsonar.token=${SONAR_TOKEN} -X"
+                           // Añadimos MAVEN_OPTS para limitar la memoria de la JVM a 2GB
+                           sh "MAVEN_OPTS='-Xmx2g' ./mvnw verify sonar:sonar -Dsonar.projectKey=sonarqube -Dsonar.token=${SONAR_TOKEN} -X"
                        }
                    }
                }
