@@ -24,8 +24,8 @@ pipeline {
                    withCredentials([string(credentialsId: params.SONARQUBE_CREDENTIALS_ID, variable: 'SONAR_TOKEN')]) {
                        dir('cafeteria-app') {
                            sh 'chmod +x mvnw'
-                           // Comando unificado y optimizado. La forma más eficiente.
-                           sh "MAVEN_OPTS='-Xms512m -Xmx2g -XX:MaxMetaspaceSize=512m' ./mvnw clean verify sonar:sonar -Dsonar.projectKey=sonarqube -Dsonar.token=${SONAR_TOKEN} -X"
+                           // Comando final: Eliminamos el flag -X para reducir la sobrecarga en un entorno con memoria limitada.
+                           sh "MAVEN_OPTS='-Xms512m -Xmx2g -XX:MaxMetaspaceSize=512m' ./mvnw clean verify sonar:sonar -Dsonar.projectKey=sonarqube -Dsonar.token=${SONAR_TOKEN}"
                        }
                    }
                }
