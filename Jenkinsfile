@@ -29,42 +29,25 @@ pipeline {
    triggers { pollSCM 'H/2 * * * *' } // poll every 2 mins
  
    stages {
-       stage('Build, Test and Analyze') {
+       stage('Build and Test') {
+           steps {
+                dir('cafeteria-app') {
+                    sh 'chmod +x mvnw'
+                   sh './mvnw verify'
+               }
+           }
+       }
+
+       stage('SonarQube Analysis') {
            steps {
                // 'sonarqube' debe coincidir con el nombre de tu configuración de servidor SonarQube en Jenkins
                withSonarQubeEnv('sonarqube') {
                    // Usa el parámetro para obtener el token de SonarQube
                    withCredentials([string(credentialsId: params.SONARQUBE_CREDENTIALS_ID, variable: 'SONAR_TOKEN')]) {
-                       
-                       // Paso robusto para esperar a SonarQube (movido aquí dentro)
-                       sh '''
-                           echo "Waiting for SonarQube to become available..."
-                           # apt-get se ejecuta una sola vez si es necesario
-                           if ! command -v curl &> /dev/null; then
-                               apt-get update && apt-get install -y curl
-                           fi
-                           
-                           # Bucle de espera compatible con sh/dash
-                           i=1
-                           while [ $i -le 30 ]; do
-                               # Usamos -f para que curl falle si hay un error de conexión
-                               if curl -s -f -u ${SONAR_TOKEN}: http://sonarqube:9000/api/system/status | grep -q '"status":"UP"'; then
-                                   echo "SonarQube is UP!"
-                                   exit 0 # Salir del script con éxito
-                               fi
-                               echo "SonarQube not yet available, waiting 5 seconds... (Attempt $i/30)"
-                               i=$((i+1))
-                               sleep 5
-                           done
-                           echo "SonarQube did not start in time."
-                           exit 1 # Salir del script con error
-                       '''
 
                        dir('cafeteria-app') {
-                           sh 'chmod +x mvnw'
-                           // Ejecuta verify y sonar en un solo comando. Maven se encarga de las rutas.
-                           // Reemplaza 'sonar.login' por 'sonar.token' para seguir las buenas prácticas.
-                           sh "./mvnw verify sonar:sonar -Dsonar.projectKey=sonarqube -Dsonar.token=${SONAR_TOKEN} -X"
+                           // Ejecuta el scanner pasando el token explícitamente
+                           sh "./mvnw sonar:sonar -Dsonar.projectKey=sonarqube -Dsonar.sources=src/main/java -Dsonar.java.binaries=target/classes -Dsonar.login=${SONAR_TOKEN} -X"
                        }
                    }
                }
@@ -72,6 +55,7 @@ pipeline {
            post {
                success {
                    // Espera el resultado del Quality Gate y falla el pipeline si no es 'PASSED'
+                   // El timeout es opcional pero recomendado
                    timeout(time: 1, unit: 'MINUTES') {
                        waitForQualityGate abortPipeline: true
                    }
