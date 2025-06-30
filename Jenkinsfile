@@ -45,8 +45,8 @@ pipeline {
            }
            post {
                success {
-                   // Espera el resultado del Quality Gate y falla el pipeline si no es 'PASSED'
-                   timeout(time: 1, unit: 'MINUTES') {
+                   // Aumentamos el timeout a 2 minutos para dar tiempo a SonarQube
+                   timeout(time: 2, unit: 'MINUTES') {
                        waitForQualityGate abortPipeline: true
                    }
                }
