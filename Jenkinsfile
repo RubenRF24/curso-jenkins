@@ -29,23 +29,33 @@ pipeline {
    triggers { pollSCM 'H/2 * * * *' } // poll every 2 mins
  
    stages {
-       stage('Build, Test and Analyze') {
+       stage('Build and Test') {
            steps {
-               // 'sonarqube' debe coincidir con el nombre de tu configuración de servidor SonarQube en Jenkins
+               dir('cafeteria-app') {
+                   sh 'chmod +x mvnw'
+                   // Etapa 1: Solo compilar y probar
+                   sh "MAVEN_OPTS='-Xms512m -Xmx2g -XX:MaxMetaspaceSize=512m' ./mvnw clean verify -X"
+                   // Guardamos los resultados para la siguiente etapa
+                   stash includes: 'target/', name: 'build-results'
+               }
+           }
+       }
+
+       stage('SonarQube Analysis') {
+           steps {
+               // Recuperamos los resultados de la etapa anterior
+               unstash 'build-results'
                withSonarQubeEnv('sonarqube') {
-                   // Usa el parámetro para obtener el token de SonarQube
                    withCredentials([string(credentialsId: params.SONARQUBE_CREDENTIALS_ID, variable: 'SONAR_TOKEN')]) {
                        dir('cafeteria-app') {
-                           sh 'chmod +x mvnw'
-                           // Configuración de JVM optimizada para entornos con memoria limitada
-                           sh "MAVEN_OPTS='-Xms512m -Xmx2g -XX:MaxMetaspaceSize=512m' ./mvnw clean verify sonar:sonar -Dsonar.projectKey=sonarqube -Dsonar.token=${SONAR_TOKEN} -X"
+                           // Etapa 2: Solo analizar. Maven encontrará los .class en el directorio target restaurado
+                           sh "MAVEN_OPTS='-Xms512m -Xmx2g -XX:MaxMetaspaceSize=512m' ./mvnw sonar:sonar -Dsonar.projectKey=sonarqube -Dsonar.token=${SONAR_TOKEN} -X"
                        }
                    }
                }
            }
            post {
                success {
-                   // Aumentamos el timeout a 2 minutos para dar tiempo a SonarQube
                    timeout(time: 2, unit: 'MINUTES') {
                        waitForQualityGate abortPipeline: true
                    }
