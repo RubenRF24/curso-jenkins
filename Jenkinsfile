@@ -32,9 +32,18 @@ pipeline {
            }
            post {
                success {
-                   // Aumentamos el timeout a 3 minutos para dar más tiempo a SonarQube
-                   timeout(time: 3, unit: 'MINUTES') {
-                       waitForQualityGate abortPipeline: true
+                   script {
+                       def projectKey = "sonarqube"
+                       def sonarToken = env.SONAR_TOKEN
+                       def status = sh(
+                           script: """
+                               curl -s -u ${sonarToken}: "http://host.docker.internal:9000/api/qualitygates/project_status?projectKey=${projectKey}" | jq -r .projectStatus.status
+                           """,
+                           returnStdout: true
+                       ).trim()
+                       if (status != "OK") {
+                           error "Quality Gate failed: ${status}"
+                       }
                    }
                }
            }
