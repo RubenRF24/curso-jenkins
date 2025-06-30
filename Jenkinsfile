@@ -33,6 +33,8 @@ pipeline {
            post {
                success {
                    script {
+                       // Instala jq antes de usarlo
+                       sh 'apt-get update && apt-get install -y jq'
                        def projectKey = "sonarqube"
                        def sonarToken = env.SONAR_TOKEN
                        def status = sh(
